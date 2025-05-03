@@ -1,0 +1,262 @@
+table Fact_SetTurn
+	lineageTag: a1981307-bb90-4239-a86b-22ccbd56d13a
+
+	measure '# Total Complete Sets' = SUM(Fact_SetTurn[Complete Sets])
+		formatString: 0
+		lineageTag: fe42770e-6a9b-437e-a729-14147b42a093
+
+	measure '# Total Sets in Market N' = SUM(Fact_SetTurn[Total Sets in Market])
+		lineageTag: 30d455fa-ec4e-41db-865e-da1cb5d491de
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '# Total Complete Sets Max Period' =
+			
+			VAR _maxyear = MAX(dim_date[FiscalYear] )
+			VAR _period = MAX(dim_date[Period])
+			VAR _periodNumber = MAX(dim_date[FiscalPeriod])
+			VAR _currentyear = YEAR(TODAY())
+			
+			VAR _maxMonthData  =
+			    CALCULATE (
+			        [# Total Complete Sets],
+			        dim_date[FiscalYear] = _maxyear
+			            && dim_date[Period] = _period,
+			        ALLEXCEPT (
+			            dim_date,
+			            dim_date[FiscalYear],
+			            dim_date[Period]
+			        )
+			    )
+			
+			VAR _maxlastMonthData  =
+			    CALCULATE (
+			        [# Total Complete Sets],
+			        dim_date[FiscalYear] = _maxyear
+			            && SWITCH(TRUE(), _periodNumber > 10,  dim_date[Period] = "P" & FORMAT(_periodNumber - 1, ""),dim_date[Period] = "P0" & FORMAT(_periodNumber - 1, "")),
+			        ALLEXCEPT (
+			            dim_date,
+			            dim_date[FiscalYear],
+			            dim_date[Period]
+			        )
+			    )
+			
+			RETURN
+			
+			SWITCH(
+			    TRUE(),
+			    _maxyear & " " & _period IN VALUES(Fact_SetTurn[Year Period]), _maxMonthData,
+			    _maxlastMonthData
+			)
+		formatString: 0
+		lineageTag: bc1a358a-837f-4cf6-973a-f5936c3c8019
+
+	measure '# Ortho Set Turn N' = DIVIDE([TM1 Volume Actuals], [# Total Complete Sets Max Period]) / [SlicerCount]
+		lineageTag: 0503f67f-2b03-4b73-9c41-a263172d9a84
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '# YTD Average Set Turn N' = DIVIDE([# Total Volumne YTD],[# Total Complete Sets YTD])
+		lineageTag: 4cc251af-123f-4a90-8dd5-12704a211e51
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '# New Sets Added N' = SUM(Fact_SetTurn[New Sets Added])
+		formatString: 0
+		lineageTag: 9db6c3d8-626e-4a1f-83c2-832f9fc54ba4
+
+	measure '# Sets Inactive N' = Sum(Fact_SetTurn[Sets Inactive])
+		lineageTag: dc727c04-0636-411c-9968-fdac5e1a399c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '# Set Inactive with Previous Data N' = ```
+			
+			VAR _septemberData =
+			    CALCULATE (
+			        [# Sets Inactive N],
+			        dim_date[FiscalYear] = 2023
+			            && dim_date[Period] = "P09",
+			        ALLEXCEPT (
+			            dim_date,
+			            dim_date[FiscalYear],
+			            dim_date[Period]
+			        )
+			    )
+			
+			RETURN
+			
+			SWITCH(
+			    TRUE(),
+			    MAX(Fact_SetTurn[FiscalDate]) < DATE(2023,8,31), BLANK(),
+			    MAX(Fact_SetTurn[FiscalDate]) <= DATE(2024,4,30), _septemberData,
+			    [# Set Inactive Max Date N]
+			)
+			
+			
+			```
+		formatString: 0
+		lineageTag: 96714222-0076-4e28-8c1a-09d0c299f32b
+
+	measure '# Set Inactive Max Date N' =
+			
+			VAR _maxDate = MAX(Fact_SetTurn[FiscalDate])
+			RETURN
+			CALCULATE(
+			    [# Sets Inactive N],
+			    Fact_SetTurn[FiscalDate] = _maxDate
+			)
+		lineageTag: 8a4220c6-1e9f-4709-a84c-db9d8cd46993
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '# Total Volumne YTD' = TOTALYTD([# TM1 Volume Actual],dim_date[CalendarDate])
+		lineageTag: 28610398-1345-47c7-8378-c3258b14ce81
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '# Total Complete Sets YTD' = TOTALYTD([# Total Complete Sets],dim_date[CalendarDate])
+		lineageTag: 24faab0d-62dd-42e8-9404-e0cd61b048f4
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 81634c41-f45b-4b26-ac22-120c0bb2c5b9
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Period
+		dataType: string
+		lineageTag: ab56d259-592e-404f-90d4-3db680fa955e
+		summarizeBy: none
+		sourceColumn: Period
+
+		annotation SummarizationSetBy = Automatic
+
+	column Country
+		dataType: string
+		lineageTag: 10eb9c68-8817-4174-a4a1-621acfe32d65
+		summarizeBy: none
+		sourceColumn: Country
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segment
+		dataType: string
+		lineageTag: 1a6fb049-fdda-4c0d-9870-5b4874b6dfac
+		summarizeBy: none
+		sourceColumn: Segment
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Brand Name'
+		dataType: string
+		lineageTag: ec9244de-fbf5-42fc-8a2a-01eb1f81f456
+		summarizeBy: none
+		sourceColumn: Brand Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'New Sets Added'
+		dataType: double
+		lineageTag: f4a84f20-d36c-45d7-9f2a-ccd0ef95442d
+		summarizeBy: sum
+		sourceColumn: New Sets Added
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Sets Reactivated'
+		dataType: double
+		lineageTag: ba391fea-cb01-46be-a243-9f2e3592ee38
+		summarizeBy: sum
+		sourceColumn: Sets Reactivated
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Sets Inactive'
+		dataType: double
+		lineageTag: d0becb51-0eb9-4359-95b9-c3474cd2248b
+		summarizeBy: sum
+		sourceColumn: Sets Inactive
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Sets Decommissioned'
+		dataType: double
+		lineageTag: 1ba5e4c5-b0ed-49bb-a351-aa1c8aa0034c
+		summarizeBy: sum
+		sourceColumn: Sets Decommissioned
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Complete Sets'
+		dataType: double
+		lineageTag: f1f1055d-1ea1-458b-a567-0867920f630a
+		summarizeBy: sum
+		sourceColumn: Complete Sets
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Total Sets in Market'
+		dataType: double
+		lineageTag: 834ed0c1-62a9-48b3-becc-0a721da96e8c
+		summarizeBy: sum
+		sourceColumn: Total Sets in Market
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Year Period' = Fact_SetTurn[Year] & " " & Fact_SetTurn[Period]
+		lineageTag: 6d50bea3-af17-449c-b429-1a76bef817ca
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column FiscalDate = ```
+			
+			DATEVALUE (
+			    "15/" & FORMAT ( VALUE ( RIGHT ( Fact_SetTurn[Period], 2 ) ), "" ) & "/"
+			        & FORMAT ( Fact_SetTurn[Year], "" )
+			)
+			
+			```
+		formatString: dd/mm/yyyy
+		lineageTag: 72d7f48f-1f18-431e-b3ae-24a71a7fead6
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	partition Fact_SetTurn = m
+		mode: import
+		queryGroup: fct_supply_chain
+		source =
+				let
+				    Source = PowerPlatform.Dataflows(null),
+				    Workspaces = Source{[Id="Workspaces"]}[Data],
+				    #"886859f3-5619-4a85-b465-7bf774612627" = Workspaces{[workspaceId="886859f3-5619-4a85-b465-7bf774612627"]}[Data],
+				    #"b9b741f2-ec22-4e3e-ab52-86aac1c69f94" = #"886859f3-5619-4a85-b465-7bf774612627"{[dataflowId="b9b741f2-ec22-4e3e-ab52-86aac1c69f94"]}[Data],
+				    Fact_SetTurn_ = #"b9b741f2-ec22-4e3e-ab52-86aac1c69f94"{[entity="Fact_SetTurn",version=""]}[Data]
+				in
+				    Fact_SetTurn_
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

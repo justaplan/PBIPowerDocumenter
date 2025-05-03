@@ -1,0 +1,141 @@
+table 'Emerging Markets'
+	lineageTag: 8b2255bc-11b5-4b25-8af2-4f4cd3b5b9a5
+
+	column Region
+		dataType: string
+		lineageTag: de73bc0a-bd5f-431a-8feb-2c7bbf591394
+		summarizeBy: none
+		sourceColumn: Region
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cluster
+		dataType: string
+		lineageTag: e104a18f-ac87-49c9-852a-3bea7eeaff0e
+		summarizeBy: none
+		sourceColumn: Cluster
+
+		annotation SummarizationSetBy = Automatic
+
+	column Country
+		dataType: string
+		lineageTag: ce960832-6239-42a2-9eec-a2844714de3b
+		summarizeBy: none
+		sourceColumn: Country
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Country - TDM'
+		dataType: string
+		lineageTag: 1712b72e-8c1a-4f81-82cb-eaccba0d0900
+		summarizeBy: none
+		sourceColumn: Country - TDM
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sub-sets
+		dataType: string
+		lineageTag: 8653143c-b589-4503-85ce-860876251bcc
+		summarizeBy: none
+		sourceColumn: Sub-sets
+
+		annotation SummarizationSetBy = Automatic
+
+	column GM
+		dataType: string
+		lineageTag: 8259de28-ea8c-4ecf-a643-4fd41a54c03d
+		summarizeBy: none
+		sourceColumn: GM
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Country - SIOP'
+		dataType: string
+		lineageTag: 990dc92f-96b4-4df7-a2f9-9b55e09518a3
+		summarizeBy: none
+		sourceColumn: Country - SIOP
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Legal Entity'
+		dataType: string
+		lineageTag: caf6ba87-cb4e-4a45-9ebc-acecc1dbbb4e
+		summarizeBy: none
+		sourceColumn: Legal Entity
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ortho Set Countries' = If(ISBLANK(LOOKUPVALUE('fact_Pyramid_Ortho_Set_Data'[Country],'fact_Pyramid_Ortho_Set_Data'[Country],'Emerging Markets'[Country])),"No","Yes")
+		lineageTag: 1015c012-5136-4208-9ea3-58cb4cad5d5e
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Rev/Rep Countries' = If(ISBLANK(LOOKUPVALUE(dim_BU_Headcount[Country],dim_BU_Headcount[Country],'Emerging Markets'[Country])),0,1)
+		formatString: 0
+		lineageTag: 4c16d907-bd80-405c-b0f4-296f8f562e93
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column Key
+		dataType: string
+		lineageTag: 905de079-4e91-4b9f-a6e5-8dbdd2477e47
+		summarizeBy: none
+		sourceColumn: Key
+
+		annotation SummarizationSetBy = Automatic
+
+	column Entity_Cluster
+		dataType: string
+		lineageTag: 8a0bccf9-0200-4b78-a802-42cb9b20d49e
+		summarizeBy: none
+		sourceColumn: Entity_Cluster
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Country - LIFR'
+		dataType: string
+		lineageTag: eb30db4c-02c6-43b9-a2ac-2d29911fe8e3
+		summarizeBy: none
+		sourceColumn: Country - LIFR
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'LIFR Countries' = LOOKUPVALUE(vw_fct_lifr_details[country_name],vw_fct_lifr_details[country_name],'Emerging Markets'[Country])
+		lineageTag: cf5d0d84-3e16-456c-94c0-c349e193afef
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Cluster - New'
+		dataType: string
+		lineageTag: 1fe25df0-e7d5-4430-8c22-806ac52e495f
+		summarizeBy: none
+		sourceColumn: Cluster - New
+
+		annotation SummarizationSetBy = Automatic
+
+	column Market
+		dataType: string
+		lineageTag: 1c0d2ea0-8dec-42bf-b709-dd64bfc6ac3d
+		summarizeBy: none
+		sourceColumn: Market
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Emerging Markets' = m
+		mode: import
+		queryGroup: dim
+		source =
+				let
+				    Source = PowerPlatform.Dataflows(null),
+				    Workspaces = Source{[Id="Workspaces"]}[Data],
+				    #"886859f3-5619-4a85-b465-7bf774612627" = Workspaces{[workspaceId="886859f3-5619-4a85-b465-7bf774612627"]}[Data],
+				    #"04af5d6c-3a7e-48fd-a097-ebeca6c5cbc0" = #"886859f3-5619-4a85-b465-7bf774612627"{[dataflowId="04af5d6c-3a7e-48fd-a097-ebeca6c5cbc0"]}[Data],
+				    #"Emerging Markets_" = #"04af5d6c-3a7e-48fd-a097-ebeca6c5cbc0"{[entity="Emerging Markets",version=""]}[Data]
+				in
+				    #"Emerging Markets_"
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,563 @@
+table FACT_E&O
+	lineageTag: 765315ab-7cc3-47f9-822d-069379beec52
+
+	measure '# Total EO in Unit' = ```
+			SUM('FACT_E&O'[E&O Units]) 
+			```
+		formatString: #,0
+		displayFolder: 0. Measures
+		lineageTag: 75940222-7fda-4d8f-9f87-68221f85ac62
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure '# Total Inventory in Unit' = ```
+			SUM('FACT_E&O'[Qty on Hand]) 
+			```
+		formatString: #,0
+		displayFolder: 0. Measures
+		lineageTag: 49119740-7091-4869-918a-f9197a26eb95
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure '% Percentage EO Unit' = DIVIDE([# Total EO in Unit], [# Total Inventory in Unit])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 0. Measures
+		lineageTag: 84d60796-c596-49e1-a04c-41831e16babd
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure '# Total Inventory in Unit - M' =
+			
+			// # DQ Total Inventory in Unit MAX Date
+			VAR _maxyear = MAX(dim_date[FiscalYear] )
+			VAR _period = MAX(dim_date[Period])
+			
+			VAR _maxMonthData  =
+			    CALCULATE (
+			        [# Total Inventory in Unit],
+			        dim_date[FiscalYear] = _maxyear
+			            && dim_date[Period] = _period,
+			        ALLEXCEPT (
+			            dim_date,
+			            dim_date[FiscalYear],
+			            dim_date[Period]
+			        )
+			    )
+			
+			RETURN
+			    _maxMonthData
+		formatString: 0
+		displayFolder: 0. Measures
+		lineageTag: e9503aac-75bf-400c-8d4a-749ad1de9df6
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure '# Total EO in Unit -' = ```
+			
+			
+			// # DQ Total E&O in Unit MAX Date
+			VAR _maxyear = MAX(dim_date[FiscalYear] )
+			VAR _period = MAX(dim_date[Period])
+			
+			VAR _maxMonthData  =
+			    CALCULATE (
+			        [# Total EO in Unit],
+			        dim_date[FiscalYear] = _maxyear
+			            && dim_date[Period] = _period,
+			        ALLEXCEPT (
+			            dim_date,
+			            dim_date[FiscalYear],
+			            dim_date[Period]
+			        )
+			    )
+			
+			RETURN
+			    _maxMonthData
+			
+			```
+		formatString: 0
+		displayFolder: 0. Measures
+		lineageTag: 1f530d49-0c28-4e78-9791-a8b49444c62c
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure '# Total EO in USD' = ```
+			SUM('FACT_E&O'[Total E&O]) 
+			```
+		formatString: 0
+		displayFolder: 0. Measures
+		lineageTag: e6771f9c-07ea-4bee-b7a6-0bb52790d6f6
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure '% Percentage EO Unit - M' =
+			
+			// % DQ % E&O Unit MAX Date
+			DIVIDE([# Total EO in Unit -], [# Total Inventory in Unit - M])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 0. Measures
+		lineageTag: ce775cc2-b164-4a84-88a6-7eaaf8186000
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure '# Total EO in USD -' =
+			
+			// # DQ Total E&O in USD MAX Date
+			VAR _maxyear = MAX(dim_date[FiscalYear] )
+			VAR _period = MAX(dim_date[Period])
+			
+			VAR _maxMonthData  =
+			    CALCULATE (
+			        [# Total EO in USD],
+			        dim_date[FiscalYear] = _maxyear
+			            && dim_date[Period] = _period,
+			        ALLEXCEPT (
+			            dim_date,
+			            dim_date[FiscalYear],
+			            dim_date[Period]
+			        )
+			    )
+			
+			RETURN
+			    _maxMonthData
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: 0. Measures
+		lineageTag: 58148dcc-ac69-4ac5-bb99-d138abd2761a
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure '% Percentage EO Revenue - M' =
+			
+			// % DQ % E&O Revenue MAX Date
+			DIVIDE([# Total EO in USD -], [# TM1 Revenue Actuals MAX Date])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 0. Measures
+		lineageTag: 53651642-c70c-4a54-8454-4518b13a717c
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure '# Total EO Unit - Excess' =
+			
+			// Total E&O Unit MAX Date - Excess
+			CALCULATE(
+			    [# Total EO in Unit -],
+			    'FACT_E&O'[E&O Type] = "Excess"
+			)
+		displayFolder: 0. Measures
+		lineageTag: a384efea-c157-4a12-854f-2fcc8458d17f
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '# Total EO Unit - Obsolete' =
+			
+			//// Total E&O Unit MAX Date - Obsolete
+			CALCULATE(
+			    [# Total EO in Unit -],
+			    'FACT_E&O'[E&O Type] = "Obsolete"
+			)
+		displayFolder: 0. Measures
+		lineageTag: 16e40d4e-5219-43ba-85a1-90925f5e1e32
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '# Total EO USD - Excess' =
+			
+			// # DQ Total E&O USD MAX Date - Excess
+			CALCULATE(
+			    [# Total EO in USD -],
+			    'FACT_E&O'[E&O Type] = "Excess"
+			)
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: 0. Measures
+		lineageTag: 44700ccb-3150-4f74-bdd4-cfba318a288b
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure '# Total Inventory in USD' = ```
+			SUM('FACT_E&O'[Stock on Hand - Value(USD)]) 
+			```
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: 0. Measures
+		lineageTag: 5dad8fa5-3d16-4023-ae08-ff046ce4a674
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure '# Total EO USD - Obsolete' =
+			
+			// # DQ Total E&O USD MAX Date - Obsolete
+			CALCULATE(
+			    [# Total EO in USD -],
+			    'FACT_E&O'[E&O Type] = "Obsolete"
+			)
+		formatString: \$#,0.0;(\$#,0.0);\$#,0.0
+		displayFolder: 0. Measures
+		lineageTag: f4d7a69f-dcdd-4c92-89fc-fbad219c967c
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure '# Total Inventory in USD - M' = ```
+			
+			// # DQ Total Inventory in USD MAX Date 
+			VAR _maxyear = MAX(dim_date[FiscalYear] )
+			VAR _period = MAX(dim_date[Period])
+			
+			VAR _maxMonthData  =
+			    CALCULATE (
+			        [# Total Inventory in USD],
+			        dim_date[FiscalYear] = _maxyear
+			            && dim_date[Period] = _period,
+			        ALLEXCEPT (
+			            dim_date,
+			            dim_date[FiscalYear],
+			            dim_date[Period]
+			        )
+			    )
+			
+			RETURN
+			    _maxMonthData
+			```
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: 0. Measures
+		lineageTag: d5e6ef79-7cb2-4120-8b19-f8ff45fc8645
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure '# Total EO in Unit - Excess' =
+			
+			CALCULATE(
+			    [# Total EO in Unit],
+			    'FACT_E&O'[E&O Type] = "Excess"
+			)
+		displayFolder: 0. Measures
+		lineageTag: e9953021-3a2a-497b-b91c-d1405624e771
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '# Total EO in Unit - Obsolete' =
+			
+			CALCULATE(
+			    [# Total EO in Unit],
+			    'FACT_E&O'[E&O Type] = "Obsolete"
+			)
+		displayFolder: 0. Measures
+		lineageTag: 894e7ffc-5ef0-4722-9425-af3fb2fe784d
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '% Percentage EO USD - M' =
+			
+			// % DQ % E&O USD MAX Date
+			DIVIDE([# Total EO in USD -], [# Total Inventory in USD - M])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 0. Measures
+		lineageTag: ee7e357c-4587-4f2d-acb0-056454ab8caf
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure '# Total EO in USD - Excess' =
+			
+			CALCULATE(
+			    [# Total EO in USD],
+			    'FACT_E&O'[E&O Type] = "Excess"
+			)
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: 0. Measures
+		lineageTag: 5e6ab836-e3a8-413c-b3bd-12b7482eb44d
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure '# Total EO in USD - Obsolete' =
+			
+			CALCULATE(
+			    [# Total EO in USD],
+			    'FACT_E&O'[E&O Type] = "Obsolete"
+			)
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: 0. Measures
+		lineageTag: f3a3b4fc-de61-4419-bd0e-77e7fb94964f
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure '% Percentage EO USD' = DIVIDE([# Total EO in USD], [# Total Inventory in USD])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 0. Measures
+		lineageTag: ae9b626e-ea85-4cc4-b3a6-5bc117d6b7de
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure '# Total EO in USD --' = ```
+			
+			// # DQ Total E&O in USD MAX Date for Main = 
+			VAR _maxyear = MAX(dim_date[FiscalYear] )
+			VAR _period = MAX(dim_date[Period])
+			
+			VAR _maxMonthData  =
+			    CALCULATE (
+			        [# Total EO in USD],
+			        dim_date[FiscalYear] = _maxyear
+			            && dim_date[Period] = _period,
+			        ALLEXCEPT (
+			            dim_date,
+			            dim_date[FiscalYear],
+			            dim_date[Period]
+			        )
+			    )
+			
+			RETURN
+			    _maxMonthData
+			```
+		formatString: #,0
+		displayFolder: 0. Measures
+		lineageTag: 20b6e8af-ceca-4301-b5c3-59369cbf829c
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+	measure '# Total EO in USD -- Previous Month' = ```
+			
+			// # DQ Total E&O in USD MAX Date for Main = 
+			VAR _maxyear = MAX(dim_date[FiscalYear] )
+			VAR _period = 
+			SWITCH(
+			    TRUE(),
+			    MAX(dim_date[FiscalPeriod])> 10, "P" & FORMAT(MAX(dim_date[FiscalPeriod]) - 1, ""),
+			    "P0" & FORMAT(MAX(dim_date[FiscalPeriod]) - 1, "")
+			)
+			
+			
+			VAR _maxMonthData  =
+			    CALCULATE (
+			        [# Total EO in USD],
+			        dim_date[FiscalYear] = _maxyear
+			            && dim_date[Period] = _period,
+			        ALLEXCEPT (
+			            dim_date,
+			            dim_date[FiscalYear],
+			            dim_date[Period]
+			        )
+			    )
+			
+			RETURN
+			    _maxMonthData
+			```
+		formatString: 0
+		displayFolder: 0. Measures
+		lineageTag: ffbbd3e4-bfc3-49a7-8129-0030bff33402
+
+	column 'Country Column'
+		dataType: string
+		lineageTag: 1898fcbd-100d-48ea-9163-5aeb8668ea27
+		summarizeBy: none
+		sourceColumn: Country Column
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Current Period'
+		dataType: string
+		lineageTag: b2e6fb39-622f-45d0-8bbc-9824f90c4793
+		summarizeBy: none
+		sourceColumn: Current Period
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'E&O Type'
+		dataType: string
+		lineageTag: 9920bbb5-42ad-476b-b890-f05aca7a8d92
+		summarizeBy: none
+		sourceColumn: E&O Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'E&O Units'
+		dataType: int64
+		formatString: 0
+		lineageTag: b7acfa63-8c0a-4ced-a485-c490f2c0bc32
+		summarizeBy: sum
+		sourceColumn: E&O Units
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ent Code'
+		dataType: string
+		lineageTag: c84dc429-65be-4daa-82cb-e1a7886bc451
+		summarizeBy: none
+		sourceColumn: Ent Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Qty on Hand'
+		dataType: int64
+		formatString: 0
+		lineageTag: ea18959f-de29-4838-bddb-1c428cc3617d
+		summarizeBy: sum
+		sourceColumn: Qty on Hand
+
+		annotation SummarizationSetBy = Automatic
+
+	column SKU
+		dataType: string
+		lineageTag: 307f4e4f-2fff-44d8-b820-4eab790502d6
+		summarizeBy: none
+		sourceColumn: SKU
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Stock on Hand - Value(USD)'
+		dataType: double
+		lineageTag: 74d8f2e7-969a-450c-b2b3-f5dc8357d0c7
+		summarizeBy: sum
+		sourceColumn: Stock on Hand - Value(USD)
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Total E&O'
+		dataType: int64
+		formatString: 0
+		lineageTag: f63ecd2b-ccb1-47c7-9d27-95ca00cb78b0
+		summarizeBy: sum
+		sourceColumn: Total E&O
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: string
+		lineageTag: 0ff3aa2e-8939-4c77-8e85-eaa899eecf97
+		summarizeBy: none
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'DQ_Legal Entity - Country Key' = 'FACT_E&O'[Ent Code] & "_" & 'FACT_E&O'[Country Column]
+		lineageTag: d43756f4-3b96-49fb-95bf-93947c9d6007
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column DQ_YearPeriod = ```
+			
+			SWITCH(
+			    TRUE(),
+			    LEN('FACT_E&O'[Period]) < 2 , 'FACT_E&O'[Year] & " P0" & FORMAT('FACT_E&O'[Period], ""),
+			    'FACT_E&O'[Year] & " P" & FORMAT('FACT_E&O'[Period], "")
+			)
+			
+			```
+		lineageTag: 0ca4c3d8-b80c-4f2c-961e-cd4b7e9a8cef
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column Market
+		dataType: string
+		lineageTag: fdb4f5cb-707d-4101-b7d5-af7df9a4ba75
+		summarizeBy: none
+		sourceColumn: Market
+
+		annotation SummarizationSetBy = Automatic
+
+	column Period
+		dataType: string
+		lineageTag: 23f992a1-ea01-4f4c-aa31-ad342ad8dead
+		summarizeBy: none
+		sourceColumn: Period
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FACT_E&O = m
+		mode: import
+		queryGroup: dim
+		source =
+				let
+				    Source = PowerPlatform.Dataflows(null),
+				    Workspaces = Source{[Id="Workspaces"]}[Data],
+				    #"886859f3-5619-4a85-b465-7bf774612627" = Workspaces{[workspaceId="886859f3-5619-4a85-b465-7bf774612627"]}[Data],
+				    #"7c9e2860-1071-45b3-8811-e693c6067c8d" = #"886859f3-5619-4a85-b465-7bf774612627"{[dataflowId="7c9e2860-1071-45b3-8811-e693c6067c8d"]}[Data],
+				    #"FACT_E&O_" = #"7c9e2860-1071-45b3-8811-e693c6067c8d"{[entity="FACT_E&O",version=""]}[Data]
+				in
+				    #"FACT_E&O_"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

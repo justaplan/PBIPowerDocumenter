@@ -1,0 +1,115 @@
+table dim_date
+	lineageTag: 00fc1f65-b493-421c-846d-f5855dba8971
+	dataCategory: Time
+
+	column CalendarDate
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: 9dc78b5b-5fec-4f99-b345-b78d61cf3700
+		summarizeBy: none
+		sourceColumn: CalendarDate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column FiscalYear
+		dataType: int64
+		formatString: 0
+		lineageTag: e3e63116-c507-4068-b1b4-6a22bc8e8834
+		summarizeBy: none
+		sourceColumn: FiscalYear
+
+		annotation SummarizationSetBy = Automatic
+
+	column FiscalYearPeriodDesc
+		dataType: string
+		lineageTag: b26e379c-1804-4d34-91d1-e0e508f6b617
+		summarizeBy: none
+		sourceColumn: FiscalYearPeriodDesc
+
+		annotation SummarizationSetBy = Automatic
+
+	column FiscalYearQuarterDesc
+		dataType: string
+		lineageTag: 30bac6e6-5ae8-4e1f-a648-7a5f0eb8521a
+		summarizeBy: none
+		sourceColumn: FiscalYearQuarterDesc
+
+		annotation SummarizationSetBy = Automatic
+
+	column WeekDay
+		dataType: string
+		lineageTag: bb763127-2e06-4d5d-82bf-243be7be9907
+		summarizeBy: none
+		sourceColumn: WeekDay
+
+		annotation SummarizationSetBy = Automatic
+
+	column FiscalYearWeekDesc
+		dataType: string
+		lineageTag: fd18c9cb-edd7-4353-a25d-9e8f1fea1ddc
+		summarizeBy: none
+		sourceColumn: FiscalYearWeekDesc
+
+		annotation SummarizationSetBy = Automatic
+
+	column CalendarYearPeriodDesc
+		dataType: string
+		lineageTag: a54eab5f-53cb-4e13-b2da-8e32f7d67bc3
+		summarizeBy: none
+		sourceColumn: CalendarYearPeriodDesc
+
+		annotation SummarizationSetBy = Automatic
+
+	column FiscalPeriod
+		dataType: int64
+		formatString: 0
+		lineageTag: 771c0ee8-97a7-49f7-ab55-3d763cce22eb
+		summarizeBy: sum
+		sourceColumn: FiscalPeriod
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Period = if(dim_date[FiscalPeriod]<10,"P0"&dim_date[FiscalPeriod],"P"&dim_date[FiscalPeriod])
+		lineageTag: 3e96cb46-2562-420e-bb99-636cbc38a4f9
+		summarizeBy: none
+		sortByColumn: FiscalPeriod
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month = FORMAT([CalendarDate], "mmmm")
+		lineageTag: 3945518a-55ec-4de1-a92a-50840d5ad335
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Forecast Period flag' =
+			
+			var a =CALCULATE(MAX(dim_date[CalendarYearPeriodDesc]),TODAY()=dim_date[CalendarDate])
+			RETURN IF(dim_date[CalendarYearPeriodDesc]>=a,"Yes","No")
+		lineageTag: a5c4e610-acc0-4480-9ff5-46552486d752
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_date = m
+		mode: import
+		queryGroup: dim
+		source =
+				let
+				    Source = PowerPlatform.Dataflows(null),
+				    Workspaces = Source{[Id="Workspaces"]}[Data],
+				    #"886859f3-5619-4a85-b465-7bf774612627" = Workspaces{[workspaceId="886859f3-5619-4a85-b465-7bf774612627"]}[Data],
+				    #"04af5d6c-3a7e-48fd-a097-ebeca6c5cbc0" = #"886859f3-5619-4a85-b465-7bf774612627"{[dataflowId="04af5d6c-3a7e-48fd-a097-ebeca6c5cbc0"]}[Data],
+				    dim_date_ = #"04af5d6c-3a7e-48fd-a097-ebeca6c5cbc0"{[entity="dim_date",version=""]}[Data]
+				in
+				    dim_date_
+
+	annotation PBI_ResultType = Table
+

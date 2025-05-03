@@ -1,0 +1,78 @@
+table FACT_E&O_Provision
+	lineageTag: fd426dd6-d5a6-4e2a-9eb2-0552ce9dc972
+
+	column 'Year Period'
+		dataType: string
+		lineageTag: fc0ebcf7-d1ca-4be1-83a3-5e6cf6ba011f
+		summarizeBy: none
+		sourceColumn: Year Period
+
+		annotation SummarizationSetBy = Automatic
+
+	column Franchise
+		dataType: string
+		lineageTag: 40adac71-b9e7-4b7a-b7c3-d15cab4c86c3
+		summarizeBy: none
+		sourceColumn: Franchise
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cluster
+		dataType: string
+		lineageTag: 0bc358dc-68a8-4ae7-bdce-5f9a91fbc59f
+		summarizeBy: none
+		sourceColumn: Cluster
+
+		annotation SummarizationSetBy = Automatic
+
+	column Entity
+		dataType: string
+		lineageTag: c7d56524-78b1-40c6-9ab3-98b2285a1d25
+		summarizeBy: none
+		sourceColumn: Entity
+
+		annotation SummarizationSetBy = Automatic
+
+	column Scenario
+		dataType: string
+		lineageTag: bfc5ecda-7e0b-447d-b009-cecdad57bdb0
+		summarizeBy: none
+		sourceColumn: Scenario
+
+		annotation SummarizationSetBy = Automatic
+
+	column Category
+		dataType: string
+		lineageTag: d5e9e336-f49a-4078-8291-c07c55e2ff71
+		summarizeBy: none
+		sourceColumn: Category
+
+		annotation SummarizationSetBy = Automatic
+
+	column Amount
+		dataType: double
+		lineageTag: eefd1064-2374-4f15-9980-fae40a3820ec
+		summarizeBy: sum
+		sourceColumn: Amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition FACT_E&O_Provision = m
+		mode: import
+		queryGroup: dim
+		source =
+				let
+				    Source = PowerPlatform.Dataflows(null),
+				    Workspaces = Source{[Id="Workspaces"]}[Data],
+				    #"886859f3-5619-4a85-b465-7bf774612627" = Workspaces{[workspaceId="886859f3-5619-4a85-b465-7bf774612627"]}[Data],
+				    #"4c303503-a6fd-482f-aa4a-8c9bb36b9598" = #"886859f3-5619-4a85-b465-7bf774612627"{[dataflowId="4c303503-a6fd-482f-aa4a-8c9bb36b9598"]}[Data],
+				    #"FACT_E&O_Provision_" = #"4c303503-a6fd-482f-aa4a-8c9bb36b9598"{[entity="FACT_E&O_Provision",version=""]}[Data]
+				in
+				    #"FACT_E&O_Provision_"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
