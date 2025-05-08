@@ -39,8 +39,7 @@ st.markdown(
     }
     </style>
     <div class='footer'>
-        App developed by <b>Nicky</b> &nbsp;|&nbsp;
-        <a href='https://www.nickytan.com' target='_blank'>www.nickytan.com</a>
+        App developed by <b>Nicky</b>
     </div>
     """,
     unsafe_allow_html=True
@@ -138,6 +137,12 @@ if st.session_state.tmdl_data_list:
                 total_items = sum(len(tmdl.measures) + len(tmdl.columns) for _, tmdl in st.session_state.tmdl_data_list)
                 current_item = 0
                 
+                # Initialize consolidated dataframes
+                consolidated_overview = pd.DataFrame()
+                consolidated_measures = pd.DataFrame()
+                consolidated_columns = pd.DataFrame()
+                
+                # Process each TMDL file's data
                 for filename, tmdl_data in st.session_state.tmdl_data_list:
                     doc_data = {}
                     measures_data = []
@@ -174,25 +179,20 @@ if st.session_state.tmdl_data_list:
                         current_item += 1
                         progress_bar.progress(current_item / total_items)
                     
-                    # Create DataFrames
-                    doc_data['Measures'] = pd.DataFrame(measures_data)
-                    doc_data['Columns'] = pd.DataFrame(columns_data)
-                    doc_data['Table Overview'] = pd.DataFrame([{
-                        'Table Name': tmdl_data.name,
+                    # Create DataFrames for this table
+                    table_measures = pd.DataFrame(measures_data)
+                    table_columns = pd.DataFrame(columns_data)
+                    table_overview = pd.DataFrame([{
+                        'Table Name': tmdl_data.name.split('lineageTag')[0].strip(),
                         'Number of Measures': len(tmdl_data.measures),
                         'Number of Columns': len(tmdl_data.columns),
                         'Lineage Tag': tmdl_data.lineage_tag or ''
                     }])
                     
-                    # Clean table name (remove any lineageTag if present)
-                    clean_table_name = tmdl_data.name.split('lineageTag')[0].strip()
-                    
-                    # Add table name to each DataFrame
-                    for df in doc_data.values():
-                        if 'Table Name' in df.columns:
-                            df['Table Name'] = clean_table_name
-                    
-                    all_doc_data.update(doc_data)
+                    # Append to consolidated dataframes
+                    consolidated_overview = pd.concat([consolidated_overview, table_overview], ignore_index=True)
+                    consolidated_measures = pd.concat([consolidated_measures, table_measures], ignore_index=True)
+                    consolidated_columns = pd.concat([consolidated_columns, table_columns], ignore_index=True)
             
             # Clear progress indicators
             progress_bar.empty()
@@ -204,42 +204,11 @@ if st.session_state.tmdl_data_list:
             # Show elapsed time
             st.success(f"Documentation generated in {elapsed:.2f} seconds.")
             
-            # Initialize consolidated dataframes
-            consolidated_overview = pd.DataFrame()
-            consolidated_measures = pd.DataFrame()
-            consolidated_columns = pd.DataFrame()
-            
-            # Use the already processed data
-            for df_type, df in all_doc_data.items():
-                if df_type == 'Table Overview':
-                    consolidated_overview = pd.concat([consolidated_overview, df], ignore_index=True)
-                elif df_type == 'Measures':
-                    consolidated_measures = pd.concat([consolidated_measures, df], ignore_index=True)
-                elif df_type == 'Columns':
-                    consolidated_columns = pd.concat([consolidated_columns, df], ignore_index=True)
-            
-            # Add Table Name column if not present
-            if not consolidated_measures.empty and 'Table Name' not in consolidated_measures.columns:
-                consolidated_measures['Table Name'] = ''  # Will be filled later
-            if not consolidated_columns.empty and 'Table Name' not in consolidated_columns.columns:
-                consolidated_columns['Table Name'] = ''  # Will be filled later
-            
-            # Reorder columns to put Table Name first for measures and columns
-            if not consolidated_measures.empty and 'Table Name' in consolidated_measures.columns:
-                measure_cols = ['Table Name'] + [col for col in consolidated_measures.columns if col != 'Table Name']
-                consolidated_measures = consolidated_measures[measure_cols]
-            if not consolidated_columns.empty and 'Table Name' in consolidated_columns.columns:
-                column_cols = ['Table Name'] + [col for col in consolidated_columns.columns if col != 'Table Name']
-                consolidated_columns = consolidated_columns[column_cols]
-            
             # Write to Excel
             with pd.ExcelWriter(excel_file) as writer:
-                if not consolidated_overview.empty:
-                    consolidated_overview.to_excel(writer, sheet_name='Table Overview', index=False)
-                if not consolidated_measures.empty:
-                    consolidated_measures.to_excel(writer, sheet_name='Measures', index=False)
-                if not consolidated_columns.empty:
-                    consolidated_columns.to_excel(writer, sheet_name='Columns', index=False)
+                consolidated_overview.to_excel(writer, sheet_name='Table Overview', index=False)
+                consolidated_measures.to_excel(writer, sheet_name='Measures', index=False)
+                consolidated_columns.to_excel(writer, sheet_name='Columns', index=False)
             
             # Show preview of the documentation (first 5 rows only)
             if not consolidated_measures.empty:
