@@ -9,13 +9,15 @@ import streamlit as st
 # load_dotenv()
 
 # Initialize OpenAI client with Qwen configuration
-api_key = st.secrets["DASHSCOPE_API_KEY"]
+# api_key = st.secrets["DASHSCOPE_API_KEY"]
+api_key = st.secrets["NEBIUS_API_KEY"]
 if not api_key:
-    raise ValueError("DASHSCOPE_API_KEY not found in environment variables")
+    raise ValueError("NEBIUS_API_KEY not found in environment variables")
 
 client = OpenAI(
     api_key=api_key,
-    base_url="https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+    base_url="https://api.studio.nebius.com/v1/"
+    # base_url="https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 )
 
 def analyze_measure(measure: Measure) -> str:
@@ -35,13 +37,13 @@ def analyze_measure(measure: Measure) -> str:
     
     try:
         response = client.chat.completions.create(
-            model="qwen-plus",
+            model="meta-llama/Llama-3.3-70B-Instruct-fast",
             messages=[
                 {"role": "system", "content": "You are a business analyst helping to document Power BI measures in clear, concise language. Always start the definition with: 'The measure represents'."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3,
-            max_tokens=100
+            temperature=0.4,
+            max_tokens=1000
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -65,13 +67,13 @@ def analyze_column(column: Column) -> str:
     
     try:
         response = client.chat.completions.create(
-            model="qwen-plus",
+            model="meta-llama/Llama-3.3-70B-Instruct-fast",
             messages=[
                 {"role": "system", "content": "You are a business analyst helping to document Power BI columns in clear, concise language. Always start the definition with: 'The column represents'."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3,
-            max_tokens=100
+            temperature=0.4,
+            max_tokens=1000
         )
         return response.choices[0].message.content
     except Exception as e:
